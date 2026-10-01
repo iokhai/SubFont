@@ -1,71 +1,53 @@
 # SubFont
 
-macOS 原生字幕字体加载器。操作流程参考 [FontLoaderSub](https://github.com/yzwduck/FontLoaderSub)，使用 SwiftUI / AppKit 与 macOS Liquid Glass，实现独立的 macOS 字体注册和索引机制。
+A subtitle font loader for macOS.
 
-## 使用
+SubFont reads ASS/SSA subtitles, finds matching fonts in your local collection, and loads them temporarily. Keep it open while watching; quit to unload the fonts it registered.
 
-1. 将 SubFont.app 放入“应用程序”目录并打开。
-2. 在“字体库”里选择已解压的字体文件夹，等待首次索引完成。
-3. 在 Finder 右键 ASS / SSA，选择“打开方式 → SubFont”，或“服务 → 用 SubFont 加载字幕字体”。也可以把字幕、多个字幕或字幕文件夹拖进窗口或 App 图标。
-4. 查看字体加载结果，最小化 SubFont，自己打开视频。
-5. 看完后关闭窗口，即会卸载并退出；Command-W 和 Command-Q 也可以。
+- Add multiple font folders, including subfolders.
+- Pick up library changes automatically while running and on the next launch.
+- Load subtitles from Finder or drag them into the app.
 
-主窗口仅保留字体结果；顶部工具栏用于打开字幕和管理字体库。字体来源及说明可悬停查看，右键字体名可定位文件。需要手动重试时，使用“文件 → 重新检查字体”（Command-R）。
+Built with SwiftUI and AppKit, with native Liquid Glass controls. Requires **macOS 26 or later**. The app interface is currently in Simplified Chinese.
 
-Finder 服务由系统发现应用后提供；如果没有显示，可在系统设置的键盘快捷键 → 服务中检查是否启用。
+## Build
 
-添加多个字幕会累计本次需要的字体，重复文件不会重复注册。应用通过 Core Text 将选中的字体注册到当前登录会话，不永久安装字体。为了避免源文件在播放过程中移动或被替换，已选中的少量字体使用应用私有副本；正常退出时卸载并删除副本。异常结束后的登记会在下次启动时尝试清理。
+Use a Swift 6.2+ toolchain with the macOS 26 SDK.
 
-如果 macOS 无法识别字幕使用的本地化字体名，SubFont 会在私有副本中建立兼容名称，保留字形与排版数据，且不修改源字体。兼容副本同样在退出时清理。
+```sh
+git clone https://github.com/iokhai/SubFont.git
+cd SubFont
+zsh scripts/build-app.sh
+open dist/SubFont.app
+```
 
-已打开的应用是否立即刷新字体由该应用决定。当前已验证新启动的独立 Core Text 进程可以看到字体；尚未逐一验证各播放器的字体缓存行为。
+The build creates `dist/SubFont.app` and `dist/SubFont.zip` for your Mac's architecture. The app is locally signed and is not notarized.
 
-## 构建与验证
+## Usage
 
-需要 macOS 26 或更新版本，以及包含 macOS 26 SDK 的 Swift 6.2+ 工具链。只使用系统框架和 SQLite，没有第三方运行时依赖。
+1. Add your font folders using the folder icon in the toolbar.
+2. Drag in an ASS/SSA file, or choose **Open With > SubFont** in Finder. You can also open multiple subtitles or a subtitle folder.
+3. Check the results, then open your video in your player. Leave SubFont running during playback.
+4. Close the window or press **Command-Q** to unload the fonts and quit.
 
-    zsh scripts/build-app.sh
-    open dist/SubFont.app
+If a font is missing, add it to a watched folder. SubFont updates the index and retries automatically. Hover over a result for details; right-click a font name to locate its file.
 
-生成当前机器架构的 dist/SubFont.app，使用本地 ad-hoc 签名。公开分发所需的 Developer ID 签名及公证不包含在本地构建步骤中。
+## Supported files
 
-验证命令：
+**Subtitles:** external ASS/SSA files in UTF-8 or BOM-marked UTF-16, up to 64 MiB each. Embedded subtitle tracks are not read.
 
-    swift run SubFontChecks
+**Fonts:** TTF, OTF, TTC, and OTC. Matching uses font names and styles declared in the subtitle, including inline font changes.
 
-12 项检查覆盖字幕解析、UTF-8 / UTF-16、TTC、多语言名称索引、增量更新、坏文件、离线目录、真实 FSEvents 自动更新，以及跨进程会话级字体注册、中文别名兼容、TTF / TTC / CFF 字形保留、卸载、遗留登记恢复和外部字体所有权。验证程序不依赖 XCTest，Command Line Tools 环境即可运行。字体注册测试使用自制的独立测试字体，测试结束会清理。
+Fonts are registered through Core Text for the current login session. Whether a player picks them up depends on its font handling; try reopening the player if needed. SubFont does not check for individual missing glyphs.
 
-测试字体已经随源码提供。如需重新生成：
+## Development
 
-    uv run --with fonttools scripts/generate-test-font.py
+Run the checks for subtitle parsing, indexing, font registration, and cleanup:
 
-可用已下载的第三方字体进行实际环境验证（字体应先放在字体库目录之外）：
+```sh
+swift run SubFontChecks
+```
 
-    swift run SubFontFontCheck ~/fonts /path/to/downloaded-font.otf
+The checks use generated font fixtures included in the repository. No third-party runtime dependencies are required.
 
-此命令会将字体库加入应用的实际配置，复制字体并生成测试字幕、渲染预览及 JSON 报告；验证自动发现、跨进程字体使用、卸载和未变化文件不重复解析。临时注册在测试结束后清理，字体文件和字体库配置保留。它不会自动下载字体，也不代替界面和播放器验收。
-
-## 索引行为
-
-- 支持多个根目录、子目录，以及 TTF、OTF、TTC、OTC。
-- 只读取字体名称、版本和样式等必要表，不读取整个字体的字形数据。
-- SQLite 存在本机应用数据目录，文件、字体和多语言名称分层存储。
-- 运行时通过 FSEvents 合并受影响目录，分批增量更新。
-- 启动时核对文件属性，补齐退出期间的变化；未变化的字体不重新解析。
-- 非本机卷每五分钟进行一次属性核对，补偿网络共享可能缺失的事件。
-- 目录不可访问时保留索引，排除不可用来源；磁盘挂载后重新检查。
-- 更新时按文件事务提交，查询不会读到一个字体文件的半套名称。
-- 界面保留“检查更新”和“重建索引”，并显示读取失败的文件。
-
-数据位置：
-
-    ~/Library/Application Support/SubFont/index.sqlite
-    ~/Library/Application Support/SubFont/RegisteredFonts/
-
-## 当前范围
-
-- 字幕支持独立 ASS / SSA，UTF-8（有无 BOM 均可）和带 BOM 的 UTF-16；单个字幕最多 64 MiB。
-- 按实际对白及正文换字体、样式重置收集需求，忽略未使用的样式和绘图指令。
-- 不读取视频容器的内封字幕，不导出字体。
-- 不进行逐字缺字检查。字重没有精确候选时会提示可能需要播放器合成。
-- 使用原生 Liquid Glass 控件；尚未进行人工界面及 Finder 菜单验收。
+Inspired by [FontLoaderSub](https://github.com/yzwduck/FontLoaderSub).
