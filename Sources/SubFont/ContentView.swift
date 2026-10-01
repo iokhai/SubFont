@@ -16,7 +16,7 @@ struct ContentView: View {
     }
     private var subtitleTitle: String {
         guard let first = model.subtitles.first else { return "" }
-        return model.subtitles.count == 1 ? first.lastPathComponent : "\(first.lastPathComponent) 等 \(model.subtitles.count) 个字幕"
+        return model.subtitles.count == 1 ? first.lastPathComponent : "\(first.lastPathComponent) 等 \(model.subtitles.count) 个文件"
     }
 
     var body: some View {
@@ -57,7 +57,7 @@ struct ContentView: View {
                             }
                             if row.source.hasPrefix("/") {
                                 Button("在 Finder 中显示") {
-                                    NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: row.source)])
+                                    NSWorkspace.shared.activateFileViewerSelecting([row.sourceContainer ?? URL(fileURLWithPath: row.source)])
                                 }
                             }
                         }
@@ -77,10 +77,10 @@ struct ContentView: View {
                             .font(.system(size: 46, weight: .light)).foregroundStyle(.tertiary)
                             .padding(.bottom, 4)
                     }
-                    Text(model.processing ? "正在准备字体…" : model.subtitles.isEmpty ? "拖入字幕" : "未发现字体需求")
+                    Text(model.processing ? "正在读取字幕…" : model.subtitles.isEmpty ? "拖入字幕或视频" : "未发现字体需求")
                         .font(.title2.weight(.medium))
                     if model.subtitles.isEmpty && !model.processing {
-                        Text("ASS / SSA").font(.callout).foregroundStyle(.secondary)
+                        Text("ASS / SSA · MKV · MP4 / MOV").font(.callout).foregroundStyle(.secondary)
                     }
                 }.frame(maxWidth: .infinity, maxHeight: .infinity)
             }
@@ -131,10 +131,13 @@ struct ContentView: View {
             return !providers.isEmpty
         }
         .sheet(isPresented: $model.showLibrary) { LibraryView(model: model) }
+        .onChange(of: model.processing) { _, processing in
+            if !processing && model.rows.isEmpty && !messages.isEmpty { showMessages = true }
+        }
     }
 
     private func details(for row: MatchRow) -> String {
-        [row.source, row.note].filter { !$0.isEmpty }.joined(separator: "\n")
+        [row.sourceLabel ?? row.source, row.note].filter { !$0.isEmpty }.joined(separator: "\n")
     }
 }
 

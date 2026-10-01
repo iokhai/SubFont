@@ -7,8 +7,8 @@
     <key>CFBundleDisplayName</key><string>SubFont</string>
     <key>CFBundleExecutable</key><string>SubFont</string>
     <key>CFBundlePackageType</key><string>APPL</string>
-    <key>CFBundleShortVersionString</key><string>0.1.0</string>
-    <key>CFBundleVersion</key><string>1</string>
+    <key>CFBundleShortVersionString</key><string>0.2.0</string>
+    <key>CFBundleVersion</key><string>2</string>
     <key>CFBundleDevelopmentRegion</key><string>zh-Hans</string>
     <key>CFBundleIconFile</key><string>AppIcon</string>
     <key>LSMinimumSystemVersion</key><string>26.0</string>
@@ -26,7 +26,20 @@
             <key>CFBundleTypeExtensions</key><array><string>ass</string><string>ssa</string></array>
         </dict>
         <dict>
-            <key>CFBundleTypeName</key><string>字幕文件夹</string>
+            <key>CFBundleTypeName</key><string>内嵌字幕视频</string>
+            <key>CFBundleTypeRole</key><string>Viewer</string>
+            <key>LSHandlerRank</key><string>Alternate</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>io.subfont.matroska</string><string>org.webmproject.webm</string>
+                <string>public.mpeg-4</string><string>com.apple.m4v-video</string>
+                <string>com.apple.quicktime-movie</string><string>public.3gpp</string>
+            </array>
+            <key>CFBundleTypeExtensions</key>
+            <array><string>mkv</string><string>mka</string><string>mks</string><string>webm</string><string>mp4</string><string>m4v</string><string>mov</string><string>3gp</string></array>
+        </dict>
+        <dict>
+            <key>CFBundleTypeName</key><string>字幕与视频文件夹</string>
             <key>CFBundleTypeRole</key><string>Viewer</string>
             <key>LSHandlerRank</key><string>Alternate</string>
             <key>LSItemContentTypes</key><array><string>public.folder</string></array>
@@ -41,6 +54,26 @@
             <key>UTTypeTagSpecification</key>
             <dict><key>public.filename-extension</key><array><string>ass</string><string>ssa</string></array></dict>
         </dict>
+        <dict>
+            <key>UTTypeIdentifier</key><string>io.subfont.matroska</string>
+            <key>UTTypeDescription</key><string>Matroska media</string>
+            <key>UTTypeConformsTo</key><array><string>public.movie</string></array>
+            <key>UTTypeTagSpecification</key>
+            <dict>
+                <key>public.filename-extension</key><array><string>mkv</string><string>mka</string><string>mks</string></array>
+                <key>public.mime-type</key><string>video/x-matroska</string>
+            </dict>
+        </dict>
+        <dict>
+            <key>UTTypeIdentifier</key><string>org.webmproject.webm</string>
+            <key>UTTypeDescription</key><string>WebM video</string>
+            <key>UTTypeConformsTo</key><array><string>public.movie</string></array>
+            <key>UTTypeTagSpecification</key>
+            <dict>
+                <key>public.filename-extension</key><array><string>webm</string></array>
+                <key>public.mime-type</key><string>video/webm</string>
+            </dict>
+        </dict>
     </array>
     <key>NSServices</key>
     <array>
@@ -49,7 +82,13 @@
             <key>NSMessage</key><string>loadSubtitleFonts</string>
             <key>NSPortName</key><string>SubFont</string>
             <key>NSSendTypes</key><array><string>public.file-url</string><string>NSFilenamesPboardType</string></array>
-            <key>NSSendFileTypes</key><array><string>io.subfont.subtitle</string><string>public.folder</string></array>
+            <key>NSSendFileTypes</key>
+            <array>
+                <string>io.subfont.subtitle</string><string>public.folder</string>
+                <string>io.subfont.matroska</string><string>org.webmproject.webm</string>
+                <string>public.mpeg-4</string><string>com.apple.m4v-video</string>
+                <string>com.apple.quicktime-movie</string><string>public.3gpp</string>
+            </array>
             <key>NSReturnTypes</key><array/>
             <key>NSRestricted</key><true/>
         </dict>

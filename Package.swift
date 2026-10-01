@@ -7,7 +7,8 @@ let package = Package(
     products: [.executable(name: "SubFont", targets: ["SubFont"])],
     targets: [
         .systemLibrary(name: "CSQLite"),
-        .target(name: "SubFontCore", dependencies: ["CSQLite"]),
+        .systemLibrary(name: "CZlib"),
+        .target(name: "SubFontCore", dependencies: ["CSQLite", "CZlib"]),
         .executableTarget(name: "SubFont", dependencies: ["SubFontCore"]),
         .executableTarget(name: "SubFontFontCheck", dependencies: ["SubFontCore"],
                           path: "Tools/SubFontFontCheck"),

@@ -61,7 +61,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSTo
             urls = paths.map { URL(fileURLWithPath: $0) }
         }
         if urls.isEmpty {
-            error.pointee = "请选择 ASS / SSA 字幕或字幕文件夹。" as NSString
+            error.pointee = "请选择字幕、视频或文件夹。" as NSString
             return
         }
         model.open(urls); showWindow()
@@ -111,7 +111,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSTo
         appItem.submenu = app; main.addItem(appItem)
         let fileItem = NSMenuItem(title: "文件", action: nil, keyEquivalent: "")
         let file = NSMenu(title: "文件")
-        let open = file.addItem(withTitle: "打开字幕…", action: #selector(openSubtitles), keyEquivalent: "o"); open.target = self
+        let open = file.addItem(withTitle: "打开字幕或视频…", action: #selector(openSubtitles), keyEquivalent: "o"); open.target = self
         let recheck = file.addItem(withTitle: "重新检查字体", action: #selector(recheckFonts), keyEquivalent: "r"); recheck.target = self
         file.addItem(.separator())
         file.addItem(withTitle: "卸载并关闭", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "w")
@@ -137,7 +137,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSTo
                  willBeInsertedIntoToolbar flag: Bool) -> NSToolbarItem? {
         let item = NSToolbarItem(itemIdentifier: identifier)
         if identifier.rawValue == "openSubtitles" {
-            item.label = "打开字幕"; item.toolTip = "打开字幕或字幕文件夹"
+            item.label = "打开文件"; item.toolTip = "打开字幕、视频或文件夹"
             item.image = NSImage(systemSymbolName: "plus", accessibilityDescription: item.label)
             item.action = #selector(openSubtitles)
         } else {

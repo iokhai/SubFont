@@ -44,7 +44,7 @@ func requireValue<T>(_ value: T?, file: String = #fileID, line: Int = #line) thr
 @main
 struct SubFontChecks {
     static func main() async {
-        let parser = ParserTests(), index = IndexTests(), session = SessionTests()
+        let parser = ParserTests(), index = IndexTests(), session = SessionTests(), media = MediaTests()
         await run("ASS styles and overrides", parser) { try parser.testActualStylesAndOverrides() }
         await run("Unicode and vertical font names", parser) { try parser.testUnicodeEncodingsAndVerticalName() }
         await run("Drawing and unused fonts", parser) { parser.testDrawingAndOverriddenNamesAreNotRequired() }
@@ -63,8 +63,32 @@ struct SubFontChecks {
         await run("Externally registered fonts remain registered", session) {
             try await session.testNeverUnloadsAnExternallyRegisteredFont()
         }
+        await run("Real MKV tracks, font attachments and cleanup", media) {
+            try await media.testRealMatroskaAttachmentsAndLifecycle()
+        }
+        await run("Video cache invalidation and MP4 timed text", media) {
+            try await media.testCacheInvalidationAndTimedText()
+        }
+        await run("Compressed SSA and header stripping", media) {
+            try await media.testCompressedSSAAndHeaderStripping()
+        }
+        await run("Unknown clusters, codec state and lacing", media) {
+            try await media.testUnknownClustersStateChangesAndLacing()
+        }
+        await run("Unsupported tracks and malformed containers", media) {
+            try await media.testUnsupportedTracksAndMalformedContainers()
+        }
+        await run("Large movie payload skipping and cancellation", media) {
+            try await media.testLargeMovieSkipsPayloadAndCancellation()
+        }
+        await run("Fragmented MP4 inline fonts and styles", media) {
+            try await media.testFragmentedMP4InlineFontsAndStyles()
+        }
+        await run("Matroska skips large video blocks", media) {
+            try await media.testMatroskaSkipsLargeVideoBlocks()
+        }
         let failures = CheckRecorder.shared.count
-        print(failures == 0 ? "All 12 checks passed." : "\(failures) failure(s).")
+        print(failures == 0 ? "All 20 checks passed." : "\(failures) failure(s).")
         exit(failures == 0 ? 0 : 1)
     }
     private static func run(_ name: String, _ test: CheckCase, body: @Sendable () async throws -> Void) async {
